@@ -64,6 +64,25 @@ app.post('/api/gemini', async (req, res) => {
   }
 });
 
+// ── ELEVENLABS SOUND GENERATION ──────────────────────────
+app.post('/api/sound', async (req, res) => {
+  if (!ELEVENLABS_KEY) return res.status(204).end();
+  const { text = 'Electric guitar power chord riff, rock, distortion, punchy', duration = 3 } = req.body;
+  try {
+    const response = await fetch('https://api.elevenlabs.io/v1/sound-generation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'xi-api-key': ELEVENLABS_KEY },
+      body: JSON.stringify({ text, duration_seconds: duration, prompt_influence: 0.4 }),
+    });
+    if (!response.ok) return res.status(204).end();
+    res.setHeader('Content-Type', 'audio/mpeg');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(Buffer.from(await response.arrayBuffer()));
+  } catch (err) {
+    res.status(204).end();
+  }
+});
+
 // ── ELEVENLABS TTS ────────────────────────────────────────
 // Returns audio/mpeg directly
 app.post('/api/speak', async (req, res) => {
