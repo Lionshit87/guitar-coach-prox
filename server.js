@@ -14,6 +14,7 @@ app.get('/', (req, res) => {
   res.json({
     status: 'Guitar Coach Proxy OK',
     anthropic: ANTHROPIC_KEY ? '✅ configured' : '❌ missing',
+    gemini: process.env.GEMINI_API_KEY ? '✅ configured' : '❌ missing',
     elevenlabs: ELEVENLABS_KEY ? '✅ configured' : '⚠️ missing (TTS fallback mode)',
     time: new Date().toISOString()
   });
@@ -37,6 +38,29 @@ app.post('/api/claude', async (req, res) => {
     res.json(data);
   } catch (err) {
     res.status(500).json({ error: 'Claude proxy error: ' + err.message });
+  }
+});
+
+// ── GEMINI API ────────────────────────────────────────────
+app.post('/api/gemini', async (req, res) => {
+  const GEMINI_KEY = process.env.GEMINI_API_KEY;
+  if (!GEMINI_KEY) return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
+  try {
+    const { contents, systemInstruction, generationConfig, model } = req.body;
+    const mdl = model || 'gemini-1.5-flash-latest';
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${mdl}:generateContent?key=${GEMINI_KEY}`;
+    const body = { contents, generationConfig: generationConfig || { temperature: 0.85, maxOutputTokens: 1024 } };
+    if (systemInstruction) body.systemInstruction = systemInstruction;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await response.json();
+    if (!response.ok) return res.status(response.status).json(data);
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: 'Gemini proxy error: ' + err.message });
   }
 });
 
