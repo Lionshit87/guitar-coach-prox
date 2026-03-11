@@ -1,11 +1,10 @@
 {
   "name": "guitar-coach-proxy",
-  "version": "1.0.0",
-  "description": "Proxy server for Guitar Coach app — hides Anthropic API key",
+  "version": "2.0.0",
+  "description": "Proxy Guitar Coach — Anthropic + Gemini + ElevenLabs",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
+    "start": "node server.js"
   },
   "engines": {
     "node": ">=18.0.0"
